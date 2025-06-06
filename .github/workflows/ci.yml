@@ -1,15 +1,19 @@
-name: CI
+name: Laravel CRM CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [2.0]
+  pull_request:
+    branches: [2.0]
 
 jobs:
   tests:
-    runs-on: ${{ matrix.operating-system }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         operating-system: [ubuntu-latest]
         php-versions: ["8.3", "8.2"]
-    name: PHP ${{ matrix.php-versions }} test on ${{ matrix.operating-system }}
+    name: PHP ${{ matrix.php-versions }} test on ubuntu-latest
 
     services:
       mysql:
@@ -17,52 +21,47 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: krayin
+          MYSQL_USER: root
+          MYSQL_PASSWORD: root
         ports:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+   steps:
+- name: Checkout repository
+  uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+- name: Setup PHP
+  uses: shivammathur/setup-php@v2
+  with:
+    php-version: 8.2
+    extensions: mbstring, bcmath, pdo, pdo_mysql, xml, ctype, json, curl
+    coverage: none
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: curl, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
+- name: Copy .env
+  run: cp .env.example .env
 
-      - name: Composer Install
-        run: composer install
+- name: Update environment config
+  run: |
+    sed -i "s|APP_ENV=local|APP_ENV=testing|" .env
+    sed -i "s|DB_HOST=127.0.0.1|DB_HOST=127.0.0.1|" .env
+    sed -i "s|DB_PORT=3306|DB_PORT=3306|" .env
+    sed -i "s|DB_DATABASE=krayin|DB_DATABASE=krayin|" .env
+    sed -i "s|DB_USERNAME=root|DB_USERNAME=root|" .env
+    sed -i "s|DB_PASSWORD=root|DB_PASSWORD=root|" .env
 
-      - name: Set Testing Environment
-        run: |
-          cp .env.example .env
-          sed -i "s|^\(APP_ENV=\s*\).*$|\1testing|" .env
-          sed -i "s|^\(DB_HOST=\s*\).*$|\1127.0.0.1|" .env
-          sed -i "s|^\(DB_PORT=\s*\).*$|\1${{ job.services.mysql.ports['3306'] }}|" .env
-          sed -i "s|^\(DB_DATABASE=\s*\).*$|\1krayin|" .env
-          sed -i "s|^\(DB_USERNAME=\s*\).*$|\1root|" .env
-          sed -i "s|^\(DB_PASSWORD=\s*\).*$|\1root|" .env
+- name: Install Composer Dependencies
+  run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Key Generate
-        run: php artisan key:generate
+- name: Generate Application Key
+  run: php artisan key:generate
 
-      - name: Complete ENV File
-        run: |
-          printf "The complete `.env` ... \n\n"
-          cat .env
+- name: Run Laravel CRM Installation Command
+  run: php artisan krayin-crm::install --skip-env-check --skip-admin-creation
 
-      - name: Migrate Database
-        run: php artisan migrate
-
-      - name: Seed Database
-        run: php artisan db:seed
-
-      - name: Vendor Publish
-        run: php artisan vendor:publish --provider=Webkul\\Core\\Providers\\CoreServiceProvider --force
-
-      - name: Optimize Stuffs
-        run: php artisan optimize:clear
-
-      - name: Run Tests
-        run: vendor/bin/pest
+- name: Run Tests (Pest or PHPUnit)
+  run: |
+    if [ -f vendor/bin/pest ]; then
+      vendor/bin/pest --colors=always
+    else
+      php artisan test
+    fi
