@@ -1,4 +1,5 @@
-name: Laravel CRM CI
+name: CI Laravel
+description: This workflow runs tests for the Laravel application on push and pull request events.
 
 on:
   push:
