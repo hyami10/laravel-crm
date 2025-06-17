@@ -76,7 +76,8 @@ Before running the setup scripts, you need to configure your environment files:
 2. **Edit `.configs/.env`** and update the following key settings:
 
     - **For Local Development**: Set `APP_ENV=local`, `APP_DEBUG=true`
-    - **For Production**: Set `APP_ENV=production`, `APP_DEBUG=false`, and update `APP_URL`
+    - **For Production**: Set `APP_ENV=production`, `APP_DEBUG=false`, and update `APP_URL` that match your domain
+    - **App Key**: Set `APP_KEY=` with output of `openssl rand -base64 32`
     - **Database**: Use `DB_HOST=krayin-mysql` for Docker setup
     - **Other settings**: Configure mail, cache, and other services as needed
 
