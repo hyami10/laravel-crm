@@ -1,0 +1,23 @@
+name: CD Laravel
+description: This workflow build and deploy the Laravel application on push event
+
+on:
+  push:
+    branches: [2.0]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH, build, and deploy app
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/laravel-crm
+            git pull
+            ./setup-production.sh
