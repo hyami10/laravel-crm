@@ -8,18 +8,16 @@
 <a href="https://packagist.org/packages/krayin/laravel-crm"><img src="https://poser.pugx.org/krayin/laravel-crm/license.svg" alt="License"></a>
 </p>
 
-
 ![enter image description here](https://raw.githubusercontent.com/krayin/temp-media/master/dashboard.png)
 
 ## Topics
 
 1. [Introduction](#introduction)
-2. [Documentation](#documentation)
-3. [Requirements](#requirements)
-4. [Installation & Configuration](#installation-and-configuration)
-4. [Docker Installation](https://devdocs.krayincrm.com/2.0/introduction/docker.html)
-5. [License](#license)
-6. [Security Vulnerabilities](#security-vulnerabilities)
+1. [Documentation](#documentation)
+1. [Docker Installation & Setup](#docker-installation--setup)
+1. [Installation & Configuration](#manual-installation-and-configuration)
+1. [License](#license)
+1. [Security Vulnerabilities](#security-vulnerabilities)
 
 ### Introduction
 
@@ -55,7 +53,67 @@ Take advantage of two of the hottest frameworks used in this project -- Laravel 
 
 #### Krayin Documentation [https://devdocs.krayincrm.com](https://devdocs.krayincrm.com)
 
-### Requirements
+### Docker Installation & Setup
+
+Krayin CRM comes with Docker support for easy development and production deployment. The setup process is automated through shell scripts that handle database creation, dependency installation, and environment configuration.
+
+> **📚 Additional Resources:**
+>
+> -   [Official Krayin Docker Documentation](https://devdocs.krayincrm.com/2.0/introduction/docker.html#introduction)
+> -   [Krayin Docker GitHub Repository](https://github.com/krayin/krayin-docker)
+
+#### Environment Configuration
+
+Before running the setup scripts, you need to configure your environment files:
+
+1. **Copy the example file** to create your environment files:
+
+    ```bash
+    cp .env.example .configs/.env
+    cp .env.example .configs/.env.testing
+    ```
+
+2. **Edit `.configs/.env`** and update the following key settings:
+
+    - **For Local Development**: Set `APP_ENV=local`, `APP_DEBUG=true`
+    - **For Production**: Set `APP_ENV=production`, `APP_DEBUG=false`, and update `APP_URL`
+    - **Database**: Use `DB_HOST=krayin-mysql` for Docker setup
+    - **Other settings**: Configure mail, cache, and other services as needed
+
+#### Running with Docker
+
+##### For Local Development:
+
+```bash
+# Run the development setup script
+./setup.sh
+```
+
+This script will:
+
+-   Install all dependencies (including development tools like Laravel Debug Bar)
+-   Run `migrate:fresh --seed` to create fresh database with sample data
+-   Enable development features and debugging tools
+-   ⚠️ **Warning**: This will drop existing data each time it's run
+
+##### For Production Deployment:
+
+```bash
+# Run the production setup script
+./setup-production.sh
+```
+
+This script will:
+
+-   Install only production dependencies (`--no-dev` flag)
+-   Run `migrate` (safe - only applies new migrations without dropping data)
+-   Enable production optimizations (config/route/view caching)
+-   Put application in maintenance mode during deployment
+-   ✅ **Safe**: Preserves existing data and only applies new changes
+
+### Manual Installation and Configuration
+
+#### Requirements
 
 -   **SERVER**: Apache 2 or NGINX.
 -   **RAM**: 3 GB or higher.
@@ -64,8 +122,6 @@ Take advantage of two of the hottest frameworks used in this project -- Laravel 
 -   **For MariaDB users**: 10.2.7 or Higher.
 -   **Node**: 8.11.3 LTS or higher.
 -   **Composer**: 2.5 or higher
-
-### Installation and Configuration
 
 ##### Execute these commands below, in order
 
@@ -101,7 +157,6 @@ php artisan route:clear
 php artisan serve
 ```
 
-
 **How to log in as admin:**
 
 > _http(s)://example.com/admin/login_
@@ -110,6 +165,7 @@ php artisan serve
 email:admin@example.com
 password:admin123
 ```
+
 ### WhatsApp CRM Integration
 
 [Krayin CRM WhatsApp](https://krayincrm.com/extensions/krayin-crm-whatsapp-extension/) Extension enables the store administrator to generate leads via their WhatsApp number.
@@ -129,5 +185,3 @@ Krayin CRM is a truly opensource CRM framework which will always be free under t
 ### Security Vulnerabilities
 
 Please don't disclose security vulnerabilities publicly. If you find any security vulnerability in Krayin CRM then please email us: sales@krayincrm.com.
-
-test 123
